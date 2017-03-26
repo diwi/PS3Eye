@@ -3,8 +3,9 @@
 # PS3Eye
 A Java/Processing Library for the PS3Eye USB-Camera.
 
-The library-core is mostly a java-port of [PS3EYEDriver](https://github.com/inspirit/PS3EYEDriver).
+The library-core is mostly a Java-port of the [PS3EYEDriver](https://github.com/inspirit/PS3EYEDriver) project.
 
+<br>
 ![PS3Eye Header](http://thomasdiewald.com/processing/libraries/PS3Eye/PS3Eye_capture.jpg)
 
 
