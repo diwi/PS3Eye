@@ -40,7 +40,7 @@ So, to use the PS3Eye-Library you need to install the corresponding PS3Eye drive
 #### How i did it (Windows 10, x64)
 1) plugin PS3Eye-USB-Camera
 2) open the Device Manager and open [Zadig](http://zadig.akeo.ie/)
-3) make sure no driver is installed (de-install if necessary) and then use Zadig to install **libus-win32**
+3) make sure no driver is installed (uninstall if necessary) and then use Zadig to install **libus-win32**
 
 ![PS3Eye_libusb_driver_install](http://thomasdiewald.com/processing/libraries/PS3Eye/PS3Eye_libusb_driver_install.jpg)
 
