@@ -10,7 +10,7 @@
  */
 
 
-package java;
+package javaDemo;
 
 import java.util.Locale;
 

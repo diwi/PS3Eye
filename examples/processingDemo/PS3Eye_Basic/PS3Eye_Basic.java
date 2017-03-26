@@ -10,7 +10,7 @@
  */
 
 
-package processing.PS3Eye_Basic;
+package processingDemo.PS3Eye_Basic;
 
 import com.thomasdiewald.PS3Eye.PS3Eye;
 

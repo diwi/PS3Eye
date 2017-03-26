@@ -9,7 +9,7 @@
  * 
  */
 
-package processing.PS3Eye_GUI;
+package processingDemo.PS3Eye_GUI;
 
 
 
