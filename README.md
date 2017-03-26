@@ -32,14 +32,14 @@ Windows, Linux, MacOSX
 
 [usb4java](http://usb4java.org/) (based on [libusb](http://libusb.info/)) is used to access PS3Eye USB-device.
 
-So, to use this Library you need to install the corresponding PS3Eye driver for your OS.
+So, to use the PS3Eye-Library you need to install the corresponding PS3Eye driver for your OS.
 
 [How_to_use_libusb_on_Windows](https://github.com/libusb/libusb/wiki/Windows#How_to_use_libusb_on_Windows)
 
-#### How i did it
-1) plugin PS3Eye
-2) open Device Manager and open [Zadig](http://zadig.akeo.ie/)
-3) make sure no driver is installed (de-install if necessary) and then use Zadig to install libus-win32
+#### How i did it (Windows 10, x64)
+1) plugin PS3Eye-USB-Camera
+2) open the Device Manager and open [Zadig](http://zadig.akeo.ie/)
+3) make sure no driver is installed (de-install if necessary) and then use Zadig to install **libus-win32**
 
 ![PS3Eye_libusb_driver_install](http://thomasdiewald.com/processing/libraries/PS3Eye/PS3Eye_libusb_driver_install.jpg)
 
