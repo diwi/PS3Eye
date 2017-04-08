@@ -22,7 +22,7 @@
 
 
 
-package com.thomasdiewald.ps3eye_test;
+package com.thomasdiewald.ps3eye;
 
 import java.nio.ByteBuffer;
 

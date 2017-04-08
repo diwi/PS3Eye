@@ -21,7 +21,7 @@
 
 
 
-package com.thomasdiewald.ps3eye_test;
+package com.thomasdiewald.ps3eye;
 
 import org.usb4java.Device;
 
