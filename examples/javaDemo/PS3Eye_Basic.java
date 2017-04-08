@@ -23,8 +23,8 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
-import com.thomasdiewald.ps3eye.PS3Eye;
-import com.thomasdiewald.ps3eye.PS3Eye.Format;
+import com.thomasdiewald.ps3eye_test.PS3Eye;
+import com.thomasdiewald.ps3eye_test.PS3Eye.Format;
 
 
 public class PS3Eye_Basic extends JPanel implements Runnable {

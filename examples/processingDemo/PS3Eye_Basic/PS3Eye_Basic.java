@@ -12,7 +12,7 @@
 
 package ProcessingDemo.PS3Eye_Basic;
 
-import com.thomasdiewald.ps3eye.PS3EyeP5;
+import com.thomasdiewald.ps3eye_test.PS3EyeP5;
 
 import processing.core.PApplet;
 

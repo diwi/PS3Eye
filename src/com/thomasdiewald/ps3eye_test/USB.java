@@ -23,7 +23,7 @@
 
 
 
-package com.thomasdiewald.ps3eye;
+package com.thomasdiewald.ps3eye_test;
 
 import java.util.ArrayList;
 

@@ -14,7 +14,7 @@ package ProcessingDemo.PS3Eye_GUI;
 
 import java.util.ArrayList;
 
-import com.thomasdiewald.ps3eye.PS3EyeP5;
+import com.thomasdiewald.ps3eye_test.PS3EyeP5;
 
 import processing.core.PApplet;
 import processing.core.PGraphics;
