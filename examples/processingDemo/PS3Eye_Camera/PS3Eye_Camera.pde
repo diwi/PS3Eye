@@ -8,7 +8,6 @@ public void settings() {
 }
 
 public void setup() {
-  frameRate(120);
   PS3Eye[] ps3eye_list = PS3Eye.getDevices();
 
   if (ps3eye_list.length == 0) {
