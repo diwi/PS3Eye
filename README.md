@@ -26,6 +26,34 @@ JavaDoc: http://thomasdiewald.com/processing/libraries/PS3Eye/reference/index.ht
 - Install PS3Eye via the Library Manager.
 - Or manually, unzip and put the extracted PS3Eye folder into the libraries folder of your Processing sketches. Reference and examples are included in the PS3Eye folder. 
 
+## Processing Example
+
+```java
+import com.thomasdiewald.ps3eye.PS3EyeP5;
+
+PS3EyeP5 ps3eye;
+
+public void settings() {
+  size(640, 480);
+}
+
+public void setup() {
+  ps3eye = PS3EyeP5.getDevice(this);
+
+  if (ps3eye == null) {
+    System.out.println("No PS3Eye connected. Good Bye!");
+    exit();
+    return;
+  } 
+
+  ps3eye.start();
+}
+
+public void draw() {
+  image(ps3eye.getFrame(), 0, 0);
+}
+```
+
 #### Platforms
 Windows, Linux, MacOSX
 
