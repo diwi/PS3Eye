@@ -118,7 +118,24 @@ public class PS3EyeP5 extends PS3Eye{
   
   
   
+  // cleanup
+  public static void disposeAll(){
+    if(PS3EYE_LIST != null){
+      for (int i = 0; i < PS3EYE_LIST.length; i++) {
+        PS3EYE_LIST[i].release();
+      }
+      PS3EYE_LIST = null;
+      usb.release();
+//      System.out.println("PS3Eye.disposeAll()");
+    }
+  }
   
+
+  public void dispose(){
+//    System.out.println("dispose");
+    PS3EyeP5.disposeAll();
+    super.dispose();
+  }
   
   
 
