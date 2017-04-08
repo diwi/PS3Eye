@@ -17,20 +17,43 @@ public class PS3EyeCamera implements PConstants {
     private boolean running = false;
 
     /**
-     * Create a new PS3 Eye Camera.
+     * Create a new PS3 Eye camera.
      * @param parent Parent Processing sketch.
      * @param ps3Eye PS3 Eye Camera reference.
+     * @param framerate Frame rate of the PS3 Eye camera (60 or 120).
+     * @param format Image format of the PS3 Eye camera.
      */
-    public PS3EyeCamera(PApplet parent, PS3Eye ps3Eye) {
+    public PS3EyeCamera(PApplet parent, PS3Eye ps3Eye, int framerate, PS3Eye.Format format) {
         this.parent = parent;
 
         cam = ps3Eye;
+        cam.init(framerate, format);
+
         frame = parent.createImage(cam.getFrameWidth(), cam.getFrameHeight(), ARGB);
 
         parent.registerMethod("dispose", this);
         parent.registerMethod("pre", this);
+    }
 
-        cam.init();
+    /**
+     * Create a new PS3 Eye camera.
+     * @param parent Parent Processing sketch.
+     * @param ps3Eye PS3 Eye camera reference.
+     * @param framerate Frame rate of the PS3 Eye camera (60 or 120).
+     */
+    public PS3EyeCamera(PApplet parent, PS3Eye ps3Eye, int framerate)
+    {
+        this(parent, ps3Eye, framerate, PS3Eye.Format.RGB);
+    }
+
+    /**
+     * Create a new PS3 Eye camera.
+     * @param parent Parent Processing sketch.
+     * @param ps3Eye PS3 Eye camera reference.
+     */
+    public PS3EyeCamera(PApplet parent, PS3Eye ps3Eye)
+    {
+        this(parent, ps3Eye, 60);
     }
 
     /**
