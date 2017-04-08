@@ -22,7 +22,7 @@
 
 
 
-package com.thomasdiewald.PS3Eye;
+package com.thomasdiewald.ps3eye;
 
 import java.nio.ByteBuffer;
 
@@ -34,10 +34,17 @@ import org.usb4java.LibUsbException;
 
 
 
+/**
+ * 
+ * PS3Eye Camera for Java Applications.
+ * 
+ * @author Thomas Diewald
+ *
+ */
 public class PS3Eye {
   
                                         
-  static final private int OV534_REG_ADDRESS   = 0xf1;  /* sensor address */
+  static final private int OV534_REG_ADDRESS   = 0xf1;  // sensor address 
   static final private int OV534_REG_SUBADDR   = 0xf2;
   static final private int OV534_REG_WRITE     = 0xf3;
   static final private int OV534_REG_READ      = 0xf4;
@@ -51,7 +58,7 @@ public class PS3Eye {
   static final private int[][] ov534_reg_initdata = {
       { 0xe7, 0x3a },
 
-      { OV534_REG_ADDRESS, 0x42 }, // select OV772x sensor/
+      { OV534_REG_ADDRESS, 0x42 }, // select OV772x sensor
 
       { 0x92, 0x01 },
       { 0x93, 0x18 },
@@ -171,6 +178,7 @@ public class PS3Eye {
       {0x2c, 0xf0},
       {0x65, 0x20},
     };
+  @SuppressWarnings("unused")
   static final private int[][] bridge_start_qvga = {
       {0x1c, 0x00},
       {0x1d, 0x00},
@@ -182,6 +190,7 @@ public class PS3Eye {
       {0xc0, 0x28},
       {0xc1, 0x1e},
     };
+  @SuppressWarnings("unused")
   static final private int[][] sensor_start_qvga = {
       {0x12, 0x41},
       {0x17, 0x3f},
@@ -216,14 +225,14 @@ public class PS3Eye {
   
   // LibUsb
   protected int device_idx;
-  protected Device device;
-  protected DeviceHandle device_handle;
+  protected Device       usb_device;
+  protected DeviceHandle usb_device_handle;
   
   // frame
-  protected int frame_w = 640;
-  protected int frame_h = 480;
+  protected final int frame_w = 640;
+  protected final int frame_h = 480;
   protected int framerate = 60;
-  protected PS3Eye.Format format = Format.RGB;
+  protected PS3Eye.Format format = null;
   
   // controls
   protected int     gain       =    20; // 0 <->  63
@@ -245,51 +254,108 @@ public class PS3Eye {
   protected URBDesc urb = new URBDesc();
   
   
-  
   private static PS3Eye[] PS3EYE_LIST = null;
   
-  // get devices + default init
-  public static PS3Eye[] getDevicesAndInit(){
+  
+  /**
+   * get a list of all devices
+   * 
+   * @param papplet
+   * @return
+   */
+  public static PS3Eye[] getDevices(){
+    if(PS3EYE_LIST == null){
+      Device[] devices = usb.getDevices(PS3Eye.VENDOR_ID, PS3Eye.PRODUCT_ID);
+      PS3EYE_LIST = new PS3Eye[devices.length];
+      for(int i = 0; i < devices.length; i++){
+        PS3EYE_LIST[i] = new PS3Eye(devices[i], i);
+      }
+    }
+    return PS3EYE_LIST;
+  }
+  
+
+  /**
+   * get a list of all devices + init(framerate, PS3Eye.Format.RGB)
+   * 
+   * @param papplet
+   * @param framerate
+   * @return
+   */
+  public static PS3Eye[] getDevices(int framerate){
+    return getDevices(framerate, PS3Eye.Format.RGB);
+  }
+  
+  /**
+    *  get a list of all devices + init(framerate, format)
+    *  
+    * @param papplet
+    * @param framerate
+    * @param format
+    * @return
+    */
+  public static PS3Eye[] getDevices(int framerate, PS3Eye.Format format){
     PS3Eye[] list = getDevices();
     if(list != null){
       for(PS3Eye item : list){
-        item.init();
+        item.init(framerate, format);
       }
     }
     return list;
   }
   
-  // get devices
-  public static PS3Eye[] getDevices(){
-    
-    if(PS3EYE_LIST != null){
-      return PS3EYE_LIST;
-    }
-    
-    Device[] devices = usb.getDevices(PS3Eye.VENDOR_ID, PS3Eye.PRODUCT_ID);
-    
-    PS3EYE_LIST = new PS3Eye[devices.length];
-    for(int i = 0; i < devices.length; i++){
-      PS3EYE_LIST[i] = new PS3Eye(devices[i], i);
-    }
-    
-    return PS3EYE_LIST;
+
+  /**
+   * returns the number of available devices
+   * 
+   * @param papplet
+   * @return
+   */
+  public static int getDeviceCount(){
+    return getDevices().length;
   }
+  
+  /**
+   * returns the first device
+   * 
+   * @param papplet
+   * @return
+   */
+  public static PS3Eye getDevice(){
+    return getDevice(0);
+  }
+  
+  
+  /**
+   * returns a device with a given index
+   * 
+   * @param papplet
+   * @param idx
+   * @return
+   */
+  public static PS3Eye getDevice(int idx){
+    PS3Eye[] list = getDevices();
+    return list.length > idx ? list[idx] : null;
+  }
+  
+  
+  
+  
+  
+  
   
   
   // cleanup
   public static void disposeAll(){
-    if(PS3EYE_LIST == null){
-      return;
+    if(PS3EYE_LIST != null){
+      for (int i = 0; i < PS3EYE_LIST.length; i++) {
+        PS3EYE_LIST[i].release();
+      }
+      PS3EYE_LIST = null;
+      
+      usb.release();
+//      System.out.println("PS3Eye.disposeAll()");
     }
-    
-    for (int i = 0; i < PS3EYE_LIST.length; i++) {
-      PS3EYE_LIST[i].release();
-    }
-    PS3EYE_LIST = null;
-    
-    usb.release();
-//    System.out.println("PS3Eye.disposeAll()");
   }
   
   
@@ -297,12 +363,13 @@ public class PS3Eye {
   
   
   protected PS3Eye(Device device, int device_idx){
-    this.device = device;
+    this.usb_device = device;
     this.device_idx = device_idx;
   }
   
   // call on exit
   public void dispose(){
+//    System.out.println("dispose");
     PS3Eye.disposeAll();
   }
   
@@ -336,6 +403,7 @@ public class PS3Eye {
 //  #endif
     
     // probe the sensor
+    @SuppressWarnings("unused")
     int sensor_id = 0;
     sccb_reg_read(0x0a);
     sensor_id |= sccb_reg_read(0x0a) << 8;
@@ -356,8 +424,13 @@ public class PS3Eye {
   
   
   public void start(){
+    if(format == null){
+      init(60, PS3Eye.Format.RGB);
+    }
+    
+    
     if(is_streaming) return;
-    if(device_handle == null){
+    if(usb_device_handle == null){
       System.err.println("ERROR: PS3Eye needs .init() before .start()");
       // this will crash!
     }
@@ -384,7 +457,7 @@ public class PS3Eye {
     ov534_reg_write(0xe0, 0x00); // start stream
   
     // init and start urb
-    urb.start_transfers(device_handle, frame_w * frame_h);
+    urb.start_transfers(usb_device_handle, frame_w * frame_h);
     is_streaming = true;
   }
   
@@ -419,16 +492,16 @@ public class PS3Eye {
   
   
   private void openUSB(){
-    if(device_handle == null){
-      device_handle = new DeviceHandle(); 
-      int rval = LibUsb.open(device, device_handle);
+    if(usb_device_handle == null){
+      usb_device_handle = new DeviceHandle(); 
+      int rval = LibUsb.open(usb_device, usb_device_handle);
       if (rval != LibUsb.SUCCESS){
         throw new LibUsbException("error LibUsb.open", rval);
       }
     }
     
-    if(device_handle != null){
-      int rval = LibUsb.claimInterface(device_handle, 0);
+    if(usb_device_handle != null){
+      int rval = LibUsb.claimInterface(usb_device_handle, 0);
       if (rval != LibUsb.SUCCESS){
         throw new LibUsbException("error LibUsb.claimInterface", rval);
       } 
@@ -436,21 +509,21 @@ public class PS3Eye {
   }
   
   private void closeUSB(){
-    if(device_handle != null){
-      LibUsb.releaseInterface(device_handle, 0);
-      LibUsb.close(device_handle);
-      device_handle = null;
+    if(usb_device_handle != null){
+      LibUsb.releaseInterface(usb_device_handle, 0);
+      LibUsb.close(usb_device_handle);
+      usb_device_handle = null;
     }
 
-    if(device != null){
-      LibUsb.unrefDevice(device);
-      device = null;
+    if(usb_device != null){
+      LibUsb.unrefDevice(usb_device);
+      usb_device = null;
     }
   }
   
   
   public int getUSBPortNumber(){
-    return LibUsb.getPortNumber(device);
+    return LibUsb.getPortNumber(usb_device);
   }
 
 
@@ -542,7 +615,7 @@ public class PS3Eye {
     ByteBuffer buffer = ByteBuffer.allocateDirect(1);
     buffer.put(0, (byte) val);
  
-    int transfered = LibUsb.controlTransfer(device_handle, 
+    int transfered = LibUsb.controlTransfer(usb_device_handle, 
         (byte)(LibUsb.ENDPOINT_OUT | LibUsb.REQUEST_TYPE_VENDOR | LibUsb.RECIPIENT_DEVICE), 
         (byte) 0x01, (byte) 0x00, (short) reg, buffer, 500L);
  
@@ -555,7 +628,7 @@ public class PS3Eye {
   private int ov534_reg_read(int reg){
     ByteBuffer buffer = ByteBuffer.allocateDirect(1);
 
-    int transfered = LibUsb.controlTransfer(device_handle,
+    int transfered = LibUsb.controlTransfer(usb_device_handle,
         (byte) (LibUsb.ENDPOINT_IN | LibUsb.REQUEST_TYPE_VENDOR| LibUsb.RECIPIENT_DEVICE), 
         (byte) 0x01, (byte) 0x00, (short) reg,
         buffer, 500);
@@ -829,12 +902,12 @@ public class PS3Eye {
     return device_idx;
   }
   
-  public Device getDevice(){
-    return device;
+  public Device getUsbDevice(){
+    return usb_device;
   }
   
-  public DeviceHandle getDeviceHandle(){
-    return device_handle;
+  public DeviceHandle getUsbDeviceHandle(){
+    return usb_device_handle;
   }
   
   
@@ -844,7 +917,6 @@ public class PS3Eye {
   
 
   /**
-   * 
    * 
    * @return true if a new frame is available
    */
@@ -854,10 +926,11 @@ public class PS3Eye {
 
 
   /**
-   * if "wait_for_frame_to_be_available == true", the thread waits until a new 
-   * frame is availabe for transfer.
+   * When "true", the thread waits until a new frame is available for transfer.
+   * The default value is "true".
    * 
    * @param wait_for_frame_to_be_available
+   * 
    */
   public void waitAvailable(boolean wait_for_frame_to_be_available){
     urb.frame_queue.wait_for_frame_to_be_available = wait_for_frame_to_be_available;

@@ -22,10 +22,14 @@
 
 
 
-package com.thomasdiewald.PS3Eye;
+package com.thomasdiewald.ps3eye;
 
 
-
+/**
+ * 
+ * @author Thomas Diewald
+ *
+ */
 public class FrameQueue {
 
   protected int        frame_size;

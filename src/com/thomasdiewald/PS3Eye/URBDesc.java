@@ -22,7 +22,7 @@
 
 
 
-package com.thomasdiewald.PS3Eye;
+package com.thomasdiewald.ps3eye;
 
 import java.nio.ByteBuffer;
 
@@ -37,7 +37,11 @@ import org.usb4java.LibUsbException;
 import org.usb4java.Transfer;
 import org.usb4java.TransferCallback;
 
-
+/**
+ * 
+ * @author Thomas Diewald
+ *
+ */
 public class URBDesc {
 
   // Values for bmHeaderInfo (Video and Still Image Payload Headers, 2.4.3.3)

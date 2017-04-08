@@ -9,7 +9,7 @@
  * 
  */
 
-package javaDemo;
+package JavaDemo;
 
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -17,12 +17,14 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
+import java.util.Locale;
+
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
-import com.thomasdiewald.PS3Eye.PS3Eye;
-import com.thomasdiewald.PS3Eye.PS3Eye.Format;
+import com.thomasdiewald.ps3eye.PS3Eye;
+import com.thomasdiewald.ps3eye.PS3Eye.Format;
 
 
 public class PS3Eye_Basic extends JPanel implements Runnable {
@@ -44,6 +46,15 @@ public class PS3Eye_Basic extends JPanel implements Runnable {
     ps3eye.init(60, Format.RGB);
     ps3eye.start();
     
+//    // less verbose version:
+//    ps3eye = PS3Eye.getDevice();
+//    if (ps3eye == null) {
+//      System.out.println("No PS3Eye connected. Good Bye!");
+//      System.exit(0);
+//    } else {
+//      ps3eye.start();
+//    }
+
     int frame_w = ps3eye.getFrameWidth();
     int frame_h = ps3eye.getFrameHeight();
 
@@ -96,6 +107,67 @@ public class PS3Eye_Basic extends JPanel implements Runnable {
     }
     
   }
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  static class FrameRate {
+    private long count;
+    private float framerate = 0;
+    float smooth = 0.95f; // [0,1]
+
+    private int num_timers = 30;
+    private long[] timer_history = new long[num_timers];
+    private int timer_idx = 0;
+    
+    public FrameRate(){
+    }
+    
+    public float fps(){
+      return framerate;
+    }
+    public long counter(){
+      return count;
+    }
+    
+    public FrameRate update() {
+      int idx_cur = timer_idx % num_timers;
+      int idx_old = (timer_idx+num_timers+1)%num_timers;
+
+      timer_history[idx_cur] = System.nanoTime();
+      timer_idx++;
+      count++;
+
+      long duration = timer_history[idx_cur] - timer_history[idx_old];
+      
+      float framerate_cur = num_timers/(duration/1E09f);
+      framerate =  framerate * smooth + framerate_cur*(1.0f-smooth);
+
+      return this;
+    }
+    
+    @Override
+    public String toString(){
+      return String.format(Locale.ENGLISH, "%5.2f", framerate);
+    }
+
+  }
+
+  
+  
+  
+  
+  
   
   
   public static void main(String[] args) {
