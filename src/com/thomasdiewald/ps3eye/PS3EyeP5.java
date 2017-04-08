@@ -8,15 +8,6 @@
  * MIT License: https://opensource.org/licenses/MIT
  * 
  * 
- * _____________________________________________________________________________
- * 
- * The code is mostly a direct port of the "PS3EYEDriver" project by Eugene Zatepyakin. 
- * 
- * PS3EYEDriver project: https://github.com/inspirit/PS3EYEDriver
- * PS3EYEDriver license: https://github.com/inspirit/PS3EYEDriver/blob/master/LICENSE
- * 
- * _____________________________________________________________________________
- * 
  */
 
 
@@ -130,7 +121,8 @@ public class PS3EyeP5 extends PS3Eye{
   
   
   
-  // local PImage ... lazy alloc + dynamic realloc
+
+  
   protected PImage frame;
   protected PApplet papplet;
 
