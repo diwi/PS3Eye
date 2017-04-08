@@ -57,7 +57,7 @@ public class PS3EyeCamera implements PConstants {
             readFrame();
     }
 
-    public PS3Eye getCam() {
+    public PS3Eye getPS3Eye() {
         return cam;
     }
 
