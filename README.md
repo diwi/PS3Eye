@@ -20,11 +20,18 @@ Java Demo [PS3Eye_GUI.zip](https://github.com/diwi/PS3Eye/files/870862/PS3Eye_GU
 
 JavaDoc: http://thomasdiewald.com/processing/libraries/PS3Eye/reference/index.html
 
+<br>
+
 ## Installation, Processing IDE
 
 - Download [Processing 3](https://processing.org/download/?processing)
 - Install PS3Eye via the Library Manager.
 - Or manually, unzip and put the extracted PS3Eye folder into the libraries folder of your Processing sketches. Reference and examples are included in the PS3Eye folder. 
+
+#### Platforms
+Windows, Linux, MacOSX
+
+<br>
 
 ## Processing Example
 
@@ -53,9 +60,6 @@ public void draw() {
   image(ps3eye.getFrame(), 0, 0);
 }
 ```
-
-#### Platforms
-Windows, Linux, MacOSX
 
 <br>
 
