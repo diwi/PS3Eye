@@ -29,7 +29,22 @@ JavaDoc: http://thomasdiewald.com/processing/libraries/PS3Eye/reference/index.ht
 #### Platforms
 Windows, Linux, MacOSX
 
-<br>
+## Controls
+| Control            	| Default 	| Min   	| Max  	|
+|--------------------	|---------	|-------	|------	|
+| Gain               	|    20   	|   0   	|  63  	|
+| Exposure           	|   120   	|   0   	|  255 	|
+| Sharpness          	|    0    	|   0   	|  63  	|
+| Hue                	|   143   	|   0   	|  255 	|
+| Brightness         	|    20   	|   0   	|  255 	|
+| Contrast           	|    37   	|   0   	|  255 	|
+| Blue Balance       	|   128   	|   0   	|  255 	|
+| Red Balance        	|   128   	|   0   	|  255 	|
+| Green Balance      	|   128   	|   0   	|  255 	|
+| Auto Gain          	|  FALSE  	| FALSE 	| TRUE 	|
+| Auto White Balance 	|  FALSE  	| FALSE 	| TRUE 	|
+| Flip Horizontal    	|  FALSE  	| FALSE 	| TRUE 	|
+| Flip Vertical      	|  FALSE  	| FALSE 	| TRUE 	|
 
 ## Installation, PS3Eye Driver
 
