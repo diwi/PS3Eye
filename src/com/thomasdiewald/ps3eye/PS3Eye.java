@@ -178,6 +178,7 @@ public class PS3Eye {
       {0x2c, 0xf0},
       {0x65, 0x20},
     };
+
   @SuppressWarnings("unused")
   static final private int[][] bridge_start_qvga = {
       {0x1c, 0x00},
@@ -190,6 +191,7 @@ public class PS3Eye {
       {0xc0, 0x28},
       {0xc1, 0x1e},
     };
+
   @SuppressWarnings("unused")
   static final private int[][] sensor_start_qvga = {
       {0x12, 0x41},
@@ -203,6 +205,10 @@ public class PS3Eye {
     };
 
 
+  static public enum Resolution {
+    QVGA,
+    VGA
+  }
 
   static public enum Format{
     Bayer(1), // Output in Bayer. Destination buffer must be width * height bytes
@@ -229,10 +235,11 @@ public class PS3Eye {
   protected DeviceHandle usb_device_handle;
   
   // frame
-  protected final int frame_w = 640;
-  protected final int frame_h = 480;
+  protected int frame_w = 640;
+  protected int frame_h = 480;
   protected int framerate = 60;
   protected PS3Eye.Format format = null;
+  protected PS3Eye.Resolution resolution = null;
   
   // controls
   protected int     gain       =    20; // 0 <->  63
@@ -354,7 +361,6 @@ public class PS3Eye {
       PS3EYE_LIST = null;
       
       usb.release();
-//      System.out.println("PS3Eye.disposeAll()");
     }
   }
   
@@ -382,6 +388,19 @@ public class PS3Eye {
   }
 
   public void init(int framerate, PS3Eye.Format format){
+    init(framerate, format, PS3Eye.Resolution.VGA);
+  }
+
+  public void init(int framerate, PS3Eye.Format format, PS3Eye.Resolution resolution){
+    this.resolution = resolution;
+
+    // set size by resolution
+    if(resolution == Resolution.QVGA)
+    {
+      frame_w = 320;
+      frame_h = 240;
+    }
+
     openUSB();
     
     this.framerate = ov534_set_frame_rate(framerate, true);
@@ -419,10 +438,6 @@ public class PS3Eye {
     ov534_set_led(0);
   }
   
-  
-
-  
-  
   public void start(){
     if(format == null){
       init(60, PS3Eye.Format.RGB);
@@ -434,9 +449,16 @@ public class PS3Eye {
       System.err.println("ERROR: PS3Eye needs .init() before .start()");
       // this will crash!
     }
-    
-    reg_w_array(bridge_start_vga);  // 640x480
-    sccb_w_array(sensor_start_vga); // 640x480
+
+    if(resolution == Resolution.VGA) {
+      reg_w_array(bridge_start_vga);  // 640x480
+      sccb_w_array(sensor_start_vga); // 640x480
+    }
+    else if(resolution == Resolution.QVGA)
+    {
+      reg_w_array(bridge_start_qvga);  // 320x240
+      sccb_w_array(sensor_start_qvga); // 320x240
+    }
    
     ov534_set_frame_rate(framerate);
   

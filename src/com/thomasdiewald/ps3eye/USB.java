@@ -40,20 +40,20 @@ import org.usb4java.LibUsbException;
  * @author Thomas Diewald
  *
  */
-public class USB{
+public class USB {
   Context context;
-  
-  Thread   update_thread;
-  boolean  exit_signaled;
-  int      active_camera_count;
-  
-  
-  public USB(){
+
+  Thread update_thread;
+  private volatile boolean exit_signaled;
+  int active_camera_count;
+
+
+  public USB() {
     init(LibUsb.LOG_LEVEL_INFO);
   }
-  
-  public void init(int log_level){
-    if(context != null){
+
+  public void init(int log_level) {
+    if (context != null) {
       return;
     }
 
@@ -61,121 +61,71 @@ public class USB{
     if (result != LibUsb.SUCCESS) {
       throw new LibUsbException("Unable to initialize libusb.", result);
     }
-    
+
     LibUsb.setDebug(context, log_level);
   }
 
-  
-  
-  public Device[] getDevices(int vendor_id, int product_id){
-    
+
+  public Device[] getDevices(int vendor_id, int product_id) {
+
     DeviceList usb_device_list = new DeviceList();
     int result = LibUsb.getDeviceList(context, usb_device_list);
-    if (result < 0){
+    if (result < 0) {
       throw new LibUsbException("Unable to get device list", result);
     }
-    
+
     ArrayList<Device> ps3_device_list = new ArrayList<Device>();
-    
+
     try {
 
       for (Device usb_device : usb_device_list) {
         DeviceDescriptor descriptor = new DeviceDescriptor();
         result = LibUsb.getDeviceDescriptor(usb_device, descriptor);
-        if (result != LibUsb.SUCCESS){
+        if (result != LibUsb.SUCCESS) {
           throw new LibUsbException("Unable to read device descriptor", result);
         }
 
-        if(descriptor.idVendor() == vendor_id && descriptor.idProduct() == product_id){
+        if (descriptor.idVendor() == vendor_id && descriptor.idProduct() == product_id) {
           DeviceHandle handle = new DeviceHandle();
           result = LibUsb.open(usb_device, handle);
-          if (result != LibUsb.SUCCESS){
+          if (result != LibUsb.SUCCESS) {
             throw new LibUsbException("Unable to open USB device", result);
           }
-          
+
           LibUsb.close(handle);
           LibUsb.refDevice(usb_device);
           ps3_device_list.add(usb_device);
         }
-  
+
       }
     } finally {
       LibUsb.freeDeviceList(usb_device_list, true);
     }
-    
+
     return ps3_device_list.toArray(new Device[ps3_device_list.size()]);
   }
-  
-//  
-//  public PS3Eye[] listDevices(){
-//    
-//    DeviceList usb_device_list = new DeviceList();
-//    int result = LibUsb.getDeviceList(null, usb_device_list);
-//    if (result < 0){
-//      throw new LibUsbException("Unable to get device list", result);
-//    }
-//    
-//    ArrayList<PS3Eye> ps3_list = new ArrayList<PS3Eye>();
-//    
-//    try {
-//
-//      for (Device usb_device : usb_device_list) {
-//        DeviceDescriptor descriptor = new DeviceDescriptor();
-//        result = LibUsb.getDeviceDescriptor(usb_device, descriptor);
-//        if (result != LibUsb.SUCCESS){
-//          throw new LibUsbException("Unable to read device descriptor", result);
-//        }
-//
-//        short vid = descriptor.idVendor();
-//        short pid = descriptor.idProduct();
-//        
-//        if(vid == PS3Eye.VENDOR_ID && pid == PS3Eye.PRODUCT_ID){
-//          DeviceHandle handle = new DeviceHandle();
-//          result = LibUsb.open(usb_device, handle);
-//          if (result != LibUsb.SUCCESS){
-//            throw new LibUsbException("Unable to open USB device", result);
-//          }
-//          
-//          LibUsb.close(handle);
-//          LibUsb.refDevice(usb_device);
-//          
-//          
-//          
-//          ps3_list.add(new PS3Eye(usb_device));
-//        }
-//  
-//      }
-//    } finally {
-//      LibUsb.freeDeviceList(usb_device_list, true);
-//    }
-//    
-//    return ps3_list.toArray(new PS3Eye[ps3_list.size()]);
-//  }
-  
-  
-  synchronized protected void cameraStarted(){
-    if (active_camera_count++ == 0){
+
+
+  synchronized protected void cameraStarted() {
+    if (active_camera_count++ == 0) {
       startTransferThread();
     }
-      
+
   }
 
-  
-  synchronized protected void cameraStopped(){
-    if (--active_camera_count == 0){
+  synchronized protected void cameraStopped() {
+    if (--active_camera_count == 0) {
       stopTransferThread();
     }
   }
-  
-  
-  protected void startTransferThread(){
-    update_thread = new Thread(new TranferThread());
+
+  protected void startTransferThread() {
+    update_thread = new Thread(new TransferThread());
     update_thread.setName("PS3EyeDriver Transfer Thread");
     update_thread.start();
   }
-  
-  
-  synchronized protected void stopTransferThread(){
+
+  synchronized protected void stopTransferThread() {
     exit_signaled = true;
     try {
       update_thread.join();
@@ -184,26 +134,31 @@ public class USB{
     }
     // Reset the exit signal flag.
     // If we don't and we call startTransferThread() again, transferThreadFunc will exit immediately.
-    exit_signaled = false;    
+    exit_signaled = false;
   }
 
-
-  private class TranferThread implements Runnable {
+  private class TransferThread implements Runnable {
     public void run() {
-       while (!exit_signaled){
-         long timeout = 50 * 1000;
-         LibUsb.handleEventsTimeoutCompleted(context, timeout, null);
-       }
+      while (!exit_signaled) {
+        /*
+        long timeout = 50 * 1000;
+        LibUsb.handleEventsTimeoutCompleted(context, timeout, null);
+        */
+
+        int result = LibUsb.handleEventsTimeout(context, 100);
+        if (result != LibUsb.SUCCESS) {
+          throw new LibUsbException("Unable to handle events", result);
+        }
+      }
     }
   }
-  
-  
-  public void release(){
-    if(context != null){
+
+
+  public void release() {
+    if (context != null) {
+      stopTransferThread();
       LibUsb.exit(context);
       context = null;
     }
   }
-  
 }
-

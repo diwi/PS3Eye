@@ -65,7 +65,8 @@ public class PS3EyeCamera implements PConstants {
      */
     public void dispose() {
         parent.g.removeCache(frame);
-        cam.dispose();
+        cam.release();
+        PS3Eye.usb.release();
     }
 
     /**
