@@ -5,8 +5,7 @@ A Java/Processing Library for the PS3Eye USB-Camera.
 
 The library-core is mostly a Java-port of the [PS3EYEDriver](https://github.com/inspirit/PS3EYEDriver) project.
 
-
-Java Demo [PS3Eye_GUI.zip](https://github.com/diwi/PS3Eye/files/870862/PS3Eye_GUI.zip)
+Java Demo [PS3Eye_GUI.zip](https://github.com/diwi/PS3Eye/files/907531/PS3Eye_GUI.zip)
 
 ![PS3Eye Header](http://thomasdiewald.com/processing/libraries/PS3Eye/PS3Eye_capture.jpg)
 
@@ -19,6 +18,8 @@ Java Demo [PS3Eye_GUI.zip](https://github.com/diwi/PS3Eye/files/870862/PS3Eye_GU
 + Processing IDE -> Library Manager
 
 JavaDoc: http://thomasdiewald.com/processing/libraries/PS3Eye/reference/index.html
+
+<br>
 
 ## Installation, Processing IDE
 
@@ -45,6 +46,36 @@ Windows, Linux, MacOSX
 | Auto White Balance 	|  FALSE  	| FALSE 	| TRUE 	|
 | Flip Horizontal    	|  FALSE  	| FALSE 	| TRUE 	|
 | Flip Vertical      	|  FALSE  	| FALSE 	| TRUE 	|
+
+## Processing Example
+
+```java
+import com.thomasdiewald.ps3eye.PS3EyeP5;
+
+PS3EyeP5 ps3eye;
+
+public void settings() {
+  size(640, 480);
+}
+
+public void setup() {
+  ps3eye = PS3EyeP5.getDevice(this);
+
+  if (ps3eye == null) {
+    System.out.println("No PS3Eye connected. Good Bye!");
+    exit();
+    return;
+  } 
+
+  ps3eye.start();
+}
+
+public void draw() {
+  image(ps3eye.getFrame(), 0, 0);
+}
+```
+
+<br>
 
 ## Installation, PS3Eye Driver
 

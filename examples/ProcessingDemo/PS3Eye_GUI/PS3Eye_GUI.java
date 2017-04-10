@@ -9,67 +9,49 @@
  * 
  */
 
-package processingDemo.PS3Eye_GUI;
-
+package ProcessingDemo.PS3Eye_GUI;
 
 
 import java.util.ArrayList;
 
-import com.thomasdiewald.PS3Eye.PS3Eye;
+import com.thomasdiewald.ps3eye.PS3EyeP5;
 
 import processing.core.PApplet;
 import processing.core.PGraphics;
-import processing.core.PImage;
 
 
 public class PS3Eye_GUI extends PApplet{
   
-  
-  PS3Eye ps3eye;
-  PImage ps3eye_frame;
+  PS3EyeP5 ps3eye;
   
   public void settings(){
     size(640, 480);
     smooth(0);
   }
   
-  
   public void setup(){
-    PS3Eye[] ps3eye_list = PS3Eye.getDevices();
+    ps3eye = PS3EyeP5.getDevice(this);
     
-    if(ps3eye_list.length == 0){
+    if(ps3eye == null){
       System.out.println("No PS3Eye connected. Good Bye!");
       exit();
       return;
     } 
-    
-    ps3eye = ps3eye_list[0];
-    ps3eye.init();
-    ps3eye.start();
-    registerMethod("dispose", ps3eye);
-
-    ps3eye_frame = createImage(ps3eye.getFrameWidth(), ps3eye.getFrameHeight(), ARGB);
-      
+    ps3eye.start();  
     createGUI();
   }
   
 
   public void draw(){
-    
-    ps3eye_frame.loadPixels();
-    ps3eye.getFrame(ps3eye_frame.pixels);
-    ps3eye_frame.updatePixels();
+    image(ps3eye.getFrame(), 0, 0);
 
-    image(ps3eye_frame, 0, 0);
-    
     updateGUI();
     
-    // info
-    String txt_fps = String.format(getClass().getName()+ "  [fps %6.2f]", frameRate);
-    surface.setTitle(txt_fps);  
+    surface.setTitle(String.format(getClass().getName()+ "  [fps %6.2f]", frameRate));  
   }
   
 
+  
   public void mouseReleased(){
     gui.update(MiniGUI.EV_MOUSE_RELEASED);
   }
@@ -80,7 +62,10 @@ public class PS3Eye_GUI extends PApplet{
   
   
   
-  // Just a quick and dirty GUI for this demo.
+  //////////////////////////////////////////////////////////////////////////
+  //MiniGUI is just a quick and dirty GUI for this demo.
+  //////////////////////////////////////////////////////////////////////////
+  
   MiniGUI gui;
   
   public void updateGUI(){
@@ -110,13 +95,12 @@ public class PS3Eye_GUI extends PApplet{
     final MiniSwitch switch_flip_h     = new MiniSwitch(gui, "flip_h"          , px, py+=dy, sx, sy).toggle(ps3eye.getFlipH           ());
     final MiniSwitch switch_flip_v     = new MiniSwitch(gui, "flip_v"          , px, py+=dy, sx, sy).toggle(ps3eye.getFlipV           ());
     
-    MiniSwitch switch_io         = new MiniSwitch(gui, "ON"      , px, py+=dy*2, sx, sy).toggle(true);
+    final MiniSwitch switch_io         = new MiniSwitch(gui, "ON"      , px, py+=dy*2, sx, sy).toggle(true);
 
     
     gui.addEventListener(new MiniGUIEvent(){
       @Override
       public void guiEvent(MiniControl control) {
-        System.out.println("");
         if(control instanceof MiniSlider){
           MiniSlider slider = (MiniSlider) control;
           if(slider == slider_gain      ) ps3eye.setGain        (slider.val);

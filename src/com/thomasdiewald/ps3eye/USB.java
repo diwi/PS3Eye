@@ -23,7 +23,7 @@
 
 
 
-package com.thomasdiewald.PS3Eye;
+package com.thomasdiewald.ps3eye;
 
 import java.util.ArrayList;
 
@@ -35,7 +35,11 @@ import org.usb4java.DeviceList;
 import org.usb4java.LibUsb;
 import org.usb4java.LibUsbException;
 
-
+/**
+ * 
+ * @author Thomas Diewald
+ *
+ */
 public class USB{
   Context context;
   
