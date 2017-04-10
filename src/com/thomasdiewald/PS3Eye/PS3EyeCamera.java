@@ -13,6 +13,7 @@ public class PS3EyeCamera implements PConstants {
     private static int DEFAULT_CAMERA = 0;
     private static int DEFAULT_FRAMERATE = 60;
     private static PS3Eye.Format DEFAULT_FORMAT = PS3Eye.Format.RGB;
+    private static PS3Eye.Resolution DEFAULT_RESOLUTION = PS3Eye.Resolution.VGA;
 
     private PApplet parent;
     private PS3Eye cam;
@@ -26,17 +27,30 @@ public class PS3EyeCamera implements PConstants {
      * @param ps3Eye PS3 Eye Camera reference.
      * @param framerate Frame rate of the PS3 Eye camera (60 or 120).
      * @param format Image format of the PS3 Eye camera.
+     * @param resolution Resolution of the PS3 Eye camera (VGA or QVGA).
      */
-    public PS3EyeCamera(PApplet parent, PS3Eye ps3Eye, int framerate, PS3Eye.Format format) {
+    public PS3EyeCamera(PApplet parent, PS3Eye ps3Eye, int framerate, PS3Eye.Format format, PS3Eye.Resolution resolution) {
         this.parent = parent;
 
         cam = ps3Eye;
-        cam.init(framerate, format);
+        cam.init(framerate, format, resolution);
 
         frame = parent.createImage(cam.getFrameWidth(), cam.getFrameHeight(), ARGB);
 
         parent.registerMethod("dispose", this);
         parent.registerMethod("pre", this);
+    }
+
+    /**
+     * Create a new PS3 Eye camera.
+     * @param parent Parent Processing sketch.
+     * @param ps3Eye PS3 Eye camera reference.
+     * @param framerate Frame rate of the PS3 Eye camera (60 or 120).
+     * @param format Image format of the PS3 Eye camera.
+     */
+    public PS3EyeCamera(PApplet parent, PS3Eye ps3Eye, int framerate, PS3Eye.Format format)
+    {
+        this(parent, ps3Eye, framerate, format, DEFAULT_RESOLUTION);
     }
 
     /**
@@ -144,20 +158,20 @@ public class PS3EyeCamera implements PConstants {
     }
 
     public static PS3EyeCamera getDevice(PApplet parent){
-        return getDevice(parent, DEFAULT_CAMERA, DEFAULT_FRAMERATE, DEFAULT_FORMAT);
+        return getDevice(parent, DEFAULT_CAMERA);
     }
 
     public static PS3EyeCamera getDevice(PApplet parent, int index){
-        return getDevice(parent, index, DEFAULT_FRAMERATE, DEFAULT_FORMAT);
+        return getDevice(parent, index, DEFAULT_FRAMERATE, DEFAULT_FORMAT, DEFAULT_RESOLUTION);
     }
 
-    public static PS3EyeCamera getDevice(PApplet parent, int index, int framerate, PS3Eye.Format format){
+    public static PS3EyeCamera getDevice(PApplet parent, int index, int framerate, PS3Eye.Format format, PS3Eye.Resolution resolution){
         PS3Eye camera = PS3Eye.getDevice(index);
 
         // check if camera is available
         if(camera == null)
             return null;
 
-        return new PS3EyeCamera(parent, camera, framerate, format);
+        return new PS3EyeCamera(parent, camera, framerate, format, resolution);
     }
 }
