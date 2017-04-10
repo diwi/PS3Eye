@@ -1,36 +1,17 @@
-![PS3Eye Header](http://thomasdiewald.com/processing/libraries/PS3Eye/PS3Eye_header.jpg)
-
 # PS3Eye
 A Java/Processing Library for the PS3Eye USB-Camera.
 
 The library-core is mostly a Java-port of the [PS3EYEDriver](https://github.com/inspirit/PS3EYEDriver) project.
 
-Java Demo [PS3Eye_GUI.zip](https://github.com/diwi/PS3Eye/files/907531/PS3Eye_GUI.zip)
+The library initially developed by [Thomas Diewald](https://github.com/diwi/PS3Eye).
+
+This fork adds a simpler API for using it with processing. Currently supported are frame rates up to 187 FPS with QVGA and 75 FPS with VGA resolution.
 
 ![PS3Eye Header](http://thomasdiewald.com/processing/libraries/PS3Eye/PS3Eye_capture.jpg)
 
-
-<br>
-
-## Download
-+ [Releases](https://github.com/diwi/PS3Eye/releases)
-+ [PS3Eye Website](http://thomasdiewald.com/processing/libraries/PS3Eye/)
-+ Processing IDE -> Library Manager
-
-JavaDoc: http://thomasdiewald.com/processing/libraries/PS3Eye/reference/index.html
-
-<br>
-
-## Installation, Processing IDE
-
-- Download [Processing 3](https://processing.org/download/?processing)
-- Install PS3Eye via the Library Manager.
-- Or manually, unzip and put the extracted PS3Eye folder into the libraries folder of your Processing sketches. Reference and examples are included in the PS3Eye folder. 
-
-#### Platforms
-Windows, Linux, MacOSX
-
 ## Controls
+There are a lot of controls to be set. Here are the range and limits of the values:
+
 | Control            	| Default 	| Min   	| Max  	|
 |--------------------	|---------	|-------	|------	|
 | Gain               	|    20   	|   0   	|  63  	|
@@ -48,30 +29,34 @@ Windows, Linux, MacOSX
 | Flip Vertical      	|  FALSE  	| FALSE 	| TRUE 	|
 
 ## Processing Example
+This is an extended example for processing. It uses 120 FPS with the QVGA resolution.
 
 ```java
-import com.thomasdiewald.ps3eye.PS3EyeP5;
+import com.thomasdiewald.ps3eye.PS3Eye;
+import com.thomasdiewald.ps3eye.PS3EyeCamera;
 
-PS3EyeP5 ps3eye;
+PS3EyeCamera cam;
 
-public void settings() {
-  size(640, 480);
+public void settings(){
+    size(640, 480);
+    smooth(0);
 }
 
-public void setup() {
-  ps3eye = PS3EyeP5.getDevice(this);
+public void setup(){
+    frameRate(120);
 
-  if (ps3eye == null) {
-    System.out.println("No PS3Eye connected. Good Bye!");
-    exit();
-    return;
-  } 
+    // create a camera
+    cam = PS3EyeCamera.getDevice(this, 0, 120, PS3Eye.Format.RGB, PS3Eye.Resolution.QVGA);
+    cam.start();
 
-  ps3eye.start();
+    // set AWB and auto gain
+    cam.getPS3Eye().setAutoWhiteBalance(true);
+    cam.getPS3Eye().setAutogain(true);
 }
 
-public void draw() {
-  image(ps3eye.getFrame(), 0, 0);
+public void draw(){
+    // display frame
+    image(cam.getFrame(), 0, 0);
 }
 ```
 
