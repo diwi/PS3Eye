@@ -1,4 +1,4 @@
-package com.thomasdiewald.PS3Eye;
+package com.thomasdiewald.ps3eye;
 
 import processing.core.PApplet;
 import processing.core.PConstants;
@@ -10,6 +10,10 @@ import processing.core.PImage;
  * Implemented by Florian Bruggisser (https://github.com/cansik)
  */
 public class PS3EyeCamera implements PConstants {
+    private static int DEFAULT_CAMERA = 0;
+    private static int DEFAULT_FRAMERATE = 60;
+    private static PS3Eye.Format DEFAULT_FORMAT = PS3Eye.Format.RGB;
+
     private PApplet parent;
     private PS3Eye cam;
     private PImage frame;
@@ -43,7 +47,7 @@ public class PS3EyeCamera implements PConstants {
      */
     public PS3EyeCamera(PApplet parent, PS3Eye ps3Eye, int framerate)
     {
-        this(parent, ps3Eye, framerate, PS3Eye.Format.RGB);
+        this(parent, ps3Eye, framerate, DEFAULT_FORMAT);
     }
 
     /**
@@ -53,7 +57,7 @@ public class PS3EyeCamera implements PConstants {
      */
     public PS3EyeCamera(PApplet parent, PS3Eye ps3Eye)
     {
-        this(parent, ps3Eye, 60);
+        this(parent, ps3Eye, DEFAULT_FRAMERATE);
     }
 
     /**
@@ -136,5 +140,23 @@ public class PS3EyeCamera implements PConstants {
      */
     public boolean isRunning() {
         return running;
+    }
+
+    public static PS3EyeCamera getDevice(PApplet parent){
+        return getDevice(parent, DEFAULT_CAMERA, DEFAULT_FRAMERATE, DEFAULT_FORMAT);
+    }
+
+    public static PS3EyeCamera getDevice(PApplet parent, int index){
+        return getDevice(parent, index, DEFAULT_FRAMERATE, DEFAULT_FORMAT);
+    }
+
+    public static PS3EyeCamera getDevice(PApplet parent, int index, int framerate, PS3Eye.Format format){
+        PS3Eye camera = PS3Eye.getDevice(index);
+
+        // check if camera is available
+        if(camera == null)
+            return null;
+
+        return new PS3EyeCamera(parent, camera, framerate, format);
     }
 }
