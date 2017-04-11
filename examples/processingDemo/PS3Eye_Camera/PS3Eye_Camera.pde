@@ -1,4 +1,4 @@
-import com.thomasdiewald.PS3Eye.*;
+import com.thomasdiewald.ps3eye.*;
 
 PS3EyeCamera cam;
 
@@ -8,16 +8,8 @@ public void settings() {
 }
 
 public void setup() {
-  PS3Eye[] ps3eye_list = PS3Eye.getDevices();
-
-  if (ps3eye_list.length == 0) {
-    System.out.println("No PS3Eye connected. Good Bye!");
-    exit();
-    return;
-  }
-
   // pick the first device in the list
-  cam = new PS3EyeCamera(this, ps3eye_list[0]);
+  cam = PS3EyeCamera.getDevice(this);
   cam.start();
 
   // set auto gain
