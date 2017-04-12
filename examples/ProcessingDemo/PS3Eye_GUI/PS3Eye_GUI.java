@@ -30,6 +30,7 @@ public class PS3Eye_GUI extends PApplet{
   }
   
   public void setup(){
+
     ps3eye = PS3EyeP5.getDevice(this);
     
     if(ps3eye == null){
