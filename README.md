@@ -19,6 +19,37 @@ Java Demo [PS3Eye_GUI.zip](https://github.com/diwi/PS3Eye/files/939853/PS3Eye_GU
 
 JavaDoc: http://thomasdiewald.com/processing/libraries/PS3Eye/reference/index.html
 
+
+<br>
+
+## Controls
+```
+  Camera Controls
+    gain       =    20 [0,  63]
+    exposure   =   120 [0, 255]
+    sharpness  =     0 [0,  63]
+    hue        =   143 [0, 255]
+    brightness =    20 [0, 255]
+    contrast   =    37 [0, 255]
+    blueblc    =   128 [0, 255]
+    redblc     =   128 [0, 255]
+    greenblc   =   128 [0, 255]
+    autogain   = false     
+    awb        = false
+    flip_h     = false
+    flip_v     = false
+    ...
+  
+  Resolution
+    PS3Eye.Resolution.VGA  ... framerate[2,  75]
+    PS3Eye.Resolution.QVGA ... framerate[2, 187]
+  
+  PixelFormat
+    PS3Eye.Format.RGB
+    PS3Eye.Format.BGR
+    PS3Eye.Format.BAYER
+```
+
 <br>
 
 ## Installation, Processing IDE
