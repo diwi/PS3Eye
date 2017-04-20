@@ -73,7 +73,7 @@ public class URBDesc {
   private int cur_frame_data_len = 0;
   private int frame_size = 0;
   
-  protected FrameQueue frame_queue = null;
+  protected FrameQueue frame_queue = new FrameQueue();
   
   public URBDesc() {
   }
@@ -183,7 +183,7 @@ public class URBDesc {
     }
     
     PS3Eye.usb.cameraStopped();
-    frame_queue = null;
+//    frame_queue = null;
   }
   
   
@@ -210,7 +210,8 @@ public class URBDesc {
   protected boolean start_transfers(DeviceHandle handle, int curr_frame_size) {
     // Initialize the frame queue
     frame_size = curr_frame_size;
-    frame_queue = new FrameQueue(frame_size);
+    
+    frame_queue.resize(frame_size);
 
     // Initialize the current frame pointer to the start of the buffer; it will
     // be updated as frames are completed and pushed onto the frame queue

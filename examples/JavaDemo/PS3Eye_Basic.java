@@ -42,7 +42,7 @@ public class PS3Eye_Basic extends JPanel implements Runnable {
     }
 
     ps3eye = devices[0];
-    ps3eye.init(60, PS3Eye.Format.RGB);
+    ps3eye.init(60, PS3Eye.Resolution.VGA, PS3Eye.Format.RGB);
     ps3eye.start();
     
 //    // less verbose version:
@@ -54,8 +54,9 @@ public class PS3Eye_Basic extends JPanel implements Runnable {
 //      ps3eye.start();
 //    }
 
-    int frame_w = ps3eye.getFrameWidth();
-    int frame_h = ps3eye.getFrameHeight();
+    
+    int frame_w = ps3eye.getResolution().w;
+    int frame_h = ps3eye.getResolution().h;
 
     ps3eye_frame = new BufferedImage(frame_w, frame_h, BufferedImage.TYPE_INT_ARGB);
 

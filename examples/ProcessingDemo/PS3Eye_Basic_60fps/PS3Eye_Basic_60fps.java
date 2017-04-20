@@ -33,7 +33,7 @@ public class PS3Eye_Basic_60fps extends PApplet{
       return;
     } 
     
-    // start capturing with 60 fps (default)
+    // start capturing with 60 fps, VGA, RGB (default)
     ps3eye.start();
     
     // if "false" Processing/PS3Eye frameRates are not "synchronized".

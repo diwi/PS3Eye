@@ -53,36 +53,6 @@ public class PS3EyeP5 extends PS3Eye{
   
 
   /**
-   * get a list of all devices + init(framerate, PS3Eye.Format.RGB)
-   * 
-   * @param papplet
-   * @param framerate
-   * @return
-   */
-  public static PS3EyeP5[] getDevices(PApplet papplet, int framerate){
-    return getDevices(papplet, framerate, PS3Eye.Format.RGB);
-  }
-  
-  /**
-    *  get a list of all devices + init(framerate, format)
-    *  
-    * @param papplet
-    * @param framerate
-    * @param format
-    * @return
-    */
-  public static PS3EyeP5[] getDevices(PApplet papplet, int framerate, PS3Eye.Format format){
-    PS3EyeP5[] list = getDevices(papplet);
-    if(list != null){
-      for(PS3EyeP5 item : list){
-        item.init(framerate, format);
-      }
-    }
-    return list;
-  }
-  
-
-  /**
    * returns the number of available devices
    * 
    * @param papplet
@@ -152,8 +122,8 @@ public class PS3EyeP5 extends PS3Eye{
   
 
   public PImage getFrame(){
-    if(frame == null){
-      frame = papplet.createImage(frame_w, frame_h, PConstants.ARGB);
+    if(frame == null || frame.width != resolution.w || frame.height != resolution.h){
+      frame = papplet.createImage(resolution.w, resolution.h, PConstants.ARGB);
     }
     
     frame.loadPixels();

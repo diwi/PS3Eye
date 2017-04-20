@@ -39,12 +39,17 @@ public class FrameQueue {
   protected int        head = 0;
   protected int        tail = 0;
   protected int        available = 0;
+  
+  
+  protected boolean flip_vert = false;
 
-  public FrameQueue(int frame_size){
+  public FrameQueue(){
+  }
+  
+  public void resize(int frame_size){
     this.frame_size = frame_size;
     this.frame_buffer = new byte[frame_size * num_frames];
   }
-
 
   protected int GetFrameBufferStart(){
     return frame_buffer_ptr;
@@ -155,10 +160,10 @@ public class FrameQueue {
     
     byte[] buffer = frame_buffer;
     
-   
+    int off = flip_vert ? 1 : 0;
     
     // Fill rows 1 to height-1 of the destination buffer. First and last row are filled separately (they are copied from the second row and second-to-last rows respectively)
-    for (int y = 0; y < frame_height-2; source_row += source_stride, dest_row += dest_stride, ++y){
+    for (int y = off; y < frame_height-2 + off; source_row += source_stride, dest_row += dest_stride, ++y){
 //      try {
 //        if(y%5 == 0){
 //          wait(2);
@@ -190,7 +195,7 @@ public class FrameQueue {
           outBuffer[cur_pixel]           = (byte) ( (((buffer[source + 1]&UB) + (buffer[source + source_stride]&UB) + (buffer[source+source_stride + 2]&UB) + (buffer[source+source_stride * 2 + 1]&UB) + 2) >> 2)&UB);
           outBuffer[cur_pixel + swap_br] = (byte) ( (((buffer[source    ]&UB) + (buffer[source + 2            ]&UB) + (buffer[source+source_stride * 2]&UB) + (buffer[source+source_stride * 2 + 2]&UB) + 2) >> 2)&UB);       
 
-          //  Green pixel
+          // Green pixel
           int next_pixel = cur_pixel + num_output_channels;
           outBuffer[next_pixel - swap_br] = (byte) ( (((buffer[source + source_stride + 1]&UB) + (buffer[source+source_stride + 3    ]&UB) + 1) >> 1)&UB);         
           outBuffer[next_pixel]           =          buffer[source + source_stride + 2];

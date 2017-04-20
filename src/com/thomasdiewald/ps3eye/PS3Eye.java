@@ -178,7 +178,7 @@ public class PS3Eye {
       {0x2c, 0xf0},
       {0x65, 0x20},
     };
-  @SuppressWarnings("unused")
+
   static final private int[][] bridge_start_qvga = {
       {0x1c, 0x00},
       {0x1d, 0x00},
@@ -190,7 +190,7 @@ public class PS3Eye {
       {0xc0, 0x28},
       {0xc1, 0x1e},
     };
-  @SuppressWarnings("unused")
+
   static final private int[][] sensor_start_qvga = {
       {0x12, 0x41},
       {0x17, 0x3f},
@@ -209,14 +209,26 @@ public class PS3Eye {
     BGR  (3), // Output in BGR. Destination buffer must be width * height * 3 bytes
     RGB  (3); // Output in RGB. Destination buffer must be width * height * 3 bytes
     
-    public int bytes_per_pixel;
+    public final int bytes_per_pixel;
     
     private Format(int bytes_per_pixel){
       this.bytes_per_pixel = bytes_per_pixel;
     }
   };
   
+  static public enum Resolution{
+    VGA (640,480),
+    QVGA(320,240);
+    
+    public final int w,h,num_pixels;
+    private Resolution(int w, int h){
+      this.w = w;
+      this.h = h;
+      this.num_pixels = w*h;
+    }
+  }
   
+
   static final protected USB usb = new USB();
   
   // PS3Eye id's
@@ -229,22 +241,21 @@ public class PS3Eye {
   protected DeviceHandle usb_device_handle;
   
   // frame
-  protected final int frame_w = 640;
-  protected final int frame_h = 480;
   protected int framerate = 60;
-  protected PS3Eye.Format format = null;
+  protected PS3Eye.Format format = PS3Eye.Format.RGB; // RGB, BRG, BAYER
+  protected PS3Eye.Resolution resolution = PS3Eye.Resolution.VGA; // VGA, QVGA
   
   // controls
-  protected int     gain       =    20; // 0 <->  63
-  protected int     exposure   =   120; // 0 <-> 255
-  protected int     sharpness  =     0; // 0 <->  63
-  protected int     hue        =   143; // 0 <-> 255
-  protected int     brightness =    20; // 0 <-> 255
-  protected int     contrast   =    37; // 0 <-> 255
-  protected int     blueblc    =   128; // 0 <-> 255
-  protected int     redblc     =   128; // 0 <-> 255
-  protected int     greenblc   =   128; // 0 <-> 255
-  protected boolean autogain   = false;
+  protected int     gain       =  20; // gain        20 [0,  63]
+  protected int     exposure   = 120; // exposure   120 [0, 255]
+  protected int     sharpness  =   0; // sharpness    0 [0,  63]
+  protected int     hue        = 143; // hue        143 [0, 255]
+  protected int     brightness =  20; // brightness  20 [0, 255]
+  protected int     contrast   =  37; // contrast    37 [0, 255]
+  protected int     blueblc    = 128; // blueblc    128 [0, 255]
+  protected int     redblc     = 128; // redblc     128 [0, 255]
+  protected int     greenblc   = 128; // greenblc   128 [0, 255]
+  protected boolean autogain   = false;      
   protected boolean awb        = false;
   protected boolean flip_h     = false;
   protected boolean flip_v     = false;
@@ -253,7 +264,7 @@ public class PS3Eye {
   
   protected URBDesc urb = new URBDesc();
   
-  
+
   private static PS3Eye[] PS3EYE_LIST = null;
   
   
@@ -272,36 +283,6 @@ public class PS3Eye {
       }
     }
     return PS3EYE_LIST;
-  }
-  
-
-  /**
-   * get a list of all devices + init(framerate, PS3Eye.Format.RGB)
-   * 
-   * @param papplet
-   * @param framerate
-   * @return
-   */
-  public static PS3Eye[] getDevices(int framerate){
-    return getDevices(framerate, PS3Eye.Format.RGB);
-  }
-  
-  /**
-    *  get a list of all devices + init(framerate, format)
-    *  
-    * @param papplet
-    * @param framerate
-    * @param format
-    * @return
-    */
-  public static PS3Eye[] getDevices(int framerate, PS3Eye.Format format){
-    PS3Eye[] list = getDevices();
-    if(list != null){
-      for(PS3Eye item : list){
-        item.init(framerate, format);
-      }
-    }
-    return list;
   }
   
 
@@ -325,7 +306,6 @@ public class PS3Eye {
     return getDevice(0);
   }
   
-  
   /**
    * returns a device with a given index
    * 
@@ -337,12 +317,6 @@ public class PS3Eye {
     PS3Eye[] list = getDevices();
     return list.length > idx ? list[idx] : null;
   }
-  
-  
-  
-  
-  
-  
   
   
   // cleanup
@@ -360,8 +334,6 @@ public class PS3Eye {
   
   
 
-  
-  
   protected PS3Eye(Device device, int device_idx){
     this.usb_device = device;
     this.device_idx = device_idx;
@@ -374,18 +346,30 @@ public class PS3Eye {
   }
   
   public void init(){
-    init(60, Format.RGB);
+    init(60, Resolution.VGA, Format.RGB);
   }
   
   public void init(int framerate){
-    init(framerate, Format.RGB);
+    init(framerate, Resolution.VGA, Format.RGB);
+  }
+  
+  public void init(int framerate, PS3Eye.Resolution resolution){
+    init(framerate, resolution, Format.RGB);
   }
 
-  public void init(int framerate, PS3Eye.Format format){
+  public void init(int framerate, PS3Eye.Resolution resolution, PS3Eye.Format format){
+    
+    boolean push_is_streaming = isStreaming();
+    if(push_is_streaming){
+      stop();
+    }
+    
     openUSB();
     
-    this.framerate = ov534_set_frame_rate(framerate, true);
-    this.format = format;
+    this.format     = format;
+    this.resolution = resolution;
+    this.framerate  = ov534_set_frame_rate(framerate, true);
+
 
     // reset bridge
     ov534_reg_write(0xe7, 0x3a);
@@ -417,6 +401,11 @@ public class PS3Eye {
     sccb_w_array(ov772x_reg_initdata);
     ov534_reg_write(0xe0, 0x09);
     ov534_set_led(0);
+    
+    
+    if(push_is_streaming){
+      start();
+    }
   }
   
   
@@ -424,40 +413,46 @@ public class PS3Eye {
   
   
   public void start(){
-    if(format == null){
-      init(60, PS3Eye.Format.RGB);
-    }
-    
-    
     if(is_streaming) return;
+    
     if(usb_device_handle == null){
-      System.err.println("ERROR: PS3Eye needs .init() before .start()");
-      // this will crash!
+      init();
     }
     
-    reg_w_array(bridge_start_vga);  // 640x480
-    sccb_w_array(sensor_start_vga); // 640x480
-   
+    switch(resolution){
+      case VGA:
+        reg_w_array(bridge_start_vga);
+        sccb_w_array(sensor_start_vga);
+        break;
+      case QVGA:
+        reg_w_array(bridge_start_qvga);
+        sccb_w_array(sensor_start_qvga);
+        break;
+      default:
+        System.err.println("impossible resolution");
+        break;
+    }
+    
     ov534_set_frame_rate(framerate);
   
-    setAutogain(autogain);
+    setAutogain        (autogain);
     setAutoWhiteBalance(awb);
-    setGain(gain);
-    setHue(hue);
-    setExposure(exposure);
-    setBrightness(brightness);
-    setContrast(contrast);
-    setSharpness(sharpness);
-    setRedBalance(redblc);
-    setBlueBalance(blueblc);
-    setGreenBalance(greenblc);
-    setFlip(flip_h, flip_v);
+    setGain            (gain);
+    setHue             (hue);
+    setExposure        (exposure);
+    setBrightness      (brightness);
+    setContrast        (contrast);
+    setSharpness       (sharpness);
+    setRedBalance      (redblc);
+    setBlueBalance     (blueblc);
+    setGreenBalance    (greenblc);
+    setFlip            (flip_h, flip_v);
   
     ov534_set_led(1);
     ov534_reg_write(0xe0, 0x00); // start stream
   
     // init and start urb
-    urb.start_transfers(usb_device_handle, frame_w * frame_h);
+    urb.start_transfers(usb_device_handle, resolution.num_pixels);
     is_streaming = true;
   }
   
@@ -558,46 +553,97 @@ public class PS3Eye {
       ov534_reg_write(0x21, data);
     }
   }
+
   
- 
+  
+  
+  
+  // fps, (byte)r11, (byte)r0d, (byte)re5
+  private final int[][] rate_VGA = {
+//    { 83, 0x01, 0xc1, 0x02}, // 83 FPS: video is partly corrupt
+    { 75, 0x01, 0x81, 0x02}, // 75 FPS or below: video is valid
+    { 60, 0x00, 0x41, 0x04},
+    { 50, 0x01, 0x41, 0x02},
+    { 40, 0x02, 0xc1, 0x04},
+    { 30, 0x04, 0x81, 0x02},
+    { 25, 0x00, 0x01, 0x02},
+    { 20, 0x04, 0x41, 0x02},
+    { 15, 0x09, 0x81, 0x02},
+    { 10, 0x09, 0x41, 0x02},
+    {  8, 0x02, 0x01, 0x02},
+    {  5, 0x04, 0x01, 0x02},
+    {  3, 0x06, 0x01, 0x02},
+    {  2, 0x09, 0x01, 0x02},
+  };
+  
+
+  private final int[][] rate_QVGA = {
+//      {290, 0x00, 0xc1, 0x04},
+//      {205, 0x01, 0xc1, 0x02}, // 205 FPS or above: video is partly corrupt
+      {187, 0x01, 0x81, 0x02}, // 187 FPS or below: video is valid
+      {150, 0x00, 0x41, 0x04},
+      {137, 0x02, 0xc1, 0x02},
+      {125, 0x01, 0x41, 0x02},
+      {100, 0x02, 0xc1, 0x04},
+      { 90, 0x03, 0x81, 0x02},
+      { 75, 0x04, 0x81, 0x02},
+      { 60, 0x04, 0xc1, 0x04},
+      { 50, 0x04, 0x41, 0x02},
+      { 40, 0x06, 0x81, 0x03},
+      { 37, 0x00, 0x01, 0x04},
+      { 30, 0x04, 0x41, 0x04},
+      { 17, 0x18, 0xc1, 0x02},
+      { 15, 0x18, 0x81, 0x02},
+      { 12, 0x02, 0x01, 0x04},
+      { 10, 0x18, 0x41, 0x02},
+      {  7, 0x04, 0x01, 0x04},
+      {  5, 0x06, 0x01, 0x04},
+      {  3, 0x09, 0x01, 0x04},
+      {  2, 0x18, 0x01, 0x02},  
+  };
+  
+  
+  public void printAvailableConfigs(){
+    for(int i = 0; i < rate_VGA.length; i++){
+      System.out.println("VGA."+rate_VGA[i][0]);
+    }
+    for(int i = 0; i < rate_QVGA.length; i++){
+      System.out.println("QVGA."+rate_QVGA[i][0]);
+    }
+  }
+  
+
   // validate frame rate and (if not dry run) set it
   private int ov534_set_frame_rate(int framerate){
     return ov534_set_frame_rate(framerate, false);
   }
   private int ov534_set_frame_rate(int framerate, boolean dry_run){
     
-    // fps, (byte)r11, (byte)r0d, (byte)re5
-    int[][] rate_640x480 = {
-      { 83, 0x01, 0xc1, 0x02}, // 83 FPS: video is partly corrupt
-      { 75, 0x01, 0x81, 0x02}, // 75 FPS or below: video is valid
-      { 60, 0x00, 0x41, 0x04},
-      { 50, 0x01, 0x41, 0x02},
-      { 40, 0x02, 0xc1, 0x04},
-      { 30, 0x04, 0x81, 0x02},
-      { 25, 0x00, 0x01, 0x02},
-      { 20, 0x04, 0x41, 0x02},
-      { 15, 0x09, 0x81, 0x02},
-      { 10, 0x09, 0x41, 0x02},
-      {  8, 0x02, 0x01, 0x02},
-      {  5, 0x04, 0x01, 0x02},
-      {  3, 0x06, 0x01, 0x02},
-      {  2, 0x09, 0x01, 0x02},
-    };
+    final int[][] rate;
     
-    int[][] rate = rate_640x480;
-    
-    int idx = -1;
-    while(++idx < rate.length-1){
-     if (rate[idx][0] <= framerate) 
-       break;
+    switch(resolution){
+      case QVGA: rate = rate_QVGA; break;
+      case VGA : rate = rate_VGA ; break;
+      default  : rate = rate_VGA ; break;
     }
     
-    if (!dry_run) {
+    // find best (nearest) candidate
+    int idx = 0;
+    int dd_min = Integer.MAX_VALUE;
+    for(int i = 0; i < rate.length; i++){
+      int d_cur = (rate[i][0] - framerate);
+      int dd_cur = d_cur * d_cur;
+      if(dd_cur < dd_min){
+        dd_min = dd_cur;
+        idx = i;
+      }
+    }
+    
+    if (!dry_run) {     
       sccb_reg_write (0x11, rate[idx][1]);
       sccb_reg_write (0x0d, rate[idx][2]);
       ov534_reg_write(0xe5, rate[idx][3]);
     }
-
 
     return rate[idx][0];
   }
@@ -613,7 +659,7 @@ public class PS3Eye {
  
   private void ov534_reg_write(int reg, int val){
     ByteBuffer buffer = ByteBuffer.allocateDirect(1);
-    buffer.put(0, (byte) val);
+    buffer.put(0, (byte) (val & 0xFF));
  
     int transfered = LibUsb.controlTransfer(usb_device_handle, 
         (byte)(LibUsb.ENDPOINT_OUT | LibUsb.REQUEST_TYPE_VENDOR | LibUsb.RECIPIENT_DEVICE), 
@@ -866,6 +912,8 @@ public class PS3Eye {
     if (!horizontal) val |= 0x40;
     if (!vertical  ) val |= 0x80;
     sccb_reg_write(0x0c, val);
+    
+    urb.frame_queue.flip_vert = flip_v;
   }
   
   
@@ -886,12 +934,8 @@ public class PS3Eye {
     this.format = format;
   }
   
-  public int getFrameWidth(){
-    return frame_w;
-  }
-  
-  public int getFrameHeight(){
-    return frame_h;
+  public PS3Eye.Resolution getResolution(){
+    return resolution;
   }
   
   public boolean isStreaming(){
@@ -947,7 +991,7 @@ public class PS3Eye {
    */
   public byte[] getFrame(byte[] buffer){
     int num_channels = format.bytes_per_pixel;
-    int num_pixels = frame_w * frame_h;
+    int num_pixels = resolution.num_pixels;
     int num_bytes = num_pixels * num_channels;
     
     // (re)alloc
@@ -957,7 +1001,7 @@ public class PS3Eye {
     
     // blocking data transfer
     if(is_streaming){
-      urb.frame_queue.Dequeue(buffer, frame_w, frame_h, format);
+      urb.frame_queue.Dequeue(buffer, resolution.w, resolution.h, format);
     }
     
     return buffer;
@@ -978,7 +1022,7 @@ public class PS3Eye {
    */
   public void getFrame(int[] pixels){
     
-    if(pixels == null || pixels.length != frame_w*frame_h){
+    if(pixels == null || pixels.length != resolution.num_pixels){
       System.out.println("error getFrame(pixels_ARGB). pixels_ARGB has wrong size!");
       return;
     }

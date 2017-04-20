@@ -14,6 +14,7 @@ package ProcessingDemo.PS3Eye_GUI;
 
 import java.util.ArrayList;
 
+import com.thomasdiewald.ps3eye.PS3Eye;
 import com.thomasdiewald.ps3eye.PS3EyeP5;
 
 import processing.core.PApplet;
@@ -37,14 +38,19 @@ public class PS3Eye_GUI extends PApplet{
       System.out.println("No PS3Eye connected. Good Bye!");
       exit();
       return;
-    } 
-    ps3eye.start();  
+    }
+
+//    ps3eye.printAvailableConfigs();
+    ps3eye.init(60, PS3Eye.Resolution.VGA);
+    ps3eye.start();
+
     createGUI();
+    frameRate(1000);
   }
   
 
   public void draw(){
-    image(ps3eye.getFrame(), 0, 0);
+    image(ps3eye.getFrame(), 0, 0, width, height);
 
     updateGUI();
     
@@ -97,7 +103,24 @@ public class PS3Eye_GUI extends PApplet{
     final MiniSwitch switch_flip_v     = new MiniSwitch(gui, "flip_v"          , px, py+=dy, sx, sy).toggle(ps3eye.getFlipV           ());
     
     final MiniSwitch switch_io         = new MiniSwitch(gui, "ON"      , px, py+=dy*2, sx, sy).toggle(true);
-
+    
+    py += dy;
+    final MiniSwitch switch_vga75      = new MiniSwitch(gui, "VGA.75"      , px, py+=dy, sx, sy);
+    final MiniSwitch switch_vga60      = new MiniSwitch(gui, "VGA.60"      , px, py+=dy, sx, sy).toggle(true);
+    final MiniSwitch switch_vga30      = new MiniSwitch(gui, "VGA.30"      , px, py+=dy, sx, sy);
+    final MiniSwitch switch_qvga187    = new MiniSwitch(gui, "QVGA.187"    , px, py+=dy, sx, sy);
+    final MiniSwitch switch_qvga60     = new MiniSwitch(gui, "QVGA.60"     , px, py+=dy, sx, sy);
+    final MiniSwitch switch_qvga30     = new MiniSwitch(gui, "QVGA.30"     , px, py+=dy, sx, sy);
+    
+    final MiniSwitch[] configs = {
+       switch_vga75  
+      ,switch_vga60  
+      ,switch_vga30  
+      ,switch_qvga187
+      ,switch_qvga60 
+      ,switch_qvga30 
+    };
+        
     
     gui.addEventListener(new MiniGUIEvent(){
       @Override
@@ -117,16 +140,42 @@ public class PS3Eye_GUI extends PApplet{
         
         if(control instanceof MiniSwitch){
           MiniSwitch sw = (MiniSwitch) control;
-          if(sw == switch_autogain) ps3eye.setAutogain        (sw.value);
-          if(sw == switch_awb     ) ps3eye.setAutoWhiteBalance(sw.value);
+          boolean enabled = sw.value;
+          if(sw == switch_autogain) ps3eye.setAutogain        (enabled);
+          if(sw == switch_awb     ) ps3eye.setAutoWhiteBalance(enabled);
           if(sw == switch_flip_h  ) ps3eye.setFlip            (switch_flip_h.value, switch_flip_v.value);
           if(sw == switch_flip_v  ) ps3eye.setFlip            (switch_flip_h.value, switch_flip_v.value);
           
           if(sw == switch_io){
-            if(switch_io.value) { ps3eye.start();  switch_io.name = "ON" ; } 
-            else                { ps3eye.stop ();  switch_io.name = "OFF"; }
+            if(enabled) { ps3eye.start();  switch_io.name = "ON" ; } 
+            else        { ps3eye.stop ();  switch_io.name = "OFF"; }
           }
-        }  
+          
+          // atm the GUI has no smart option for any button-groups of similar
+          if(enabled){
+            int idx = -1;
+            for(int i = 0; i < configs.length; i++){
+              if(sw == configs[i]){
+                idx = i;
+                break;
+              }
+            }
+            
+            if(idx != -1){
+              for(int i = 0; i < configs.length; i++){
+                if(sw == configs[i]){
+                  String[] token = sw.name.split("[.]");
+                  PS3Eye.Resolution resolution = PS3Eye.Resolution.valueOf(token[0]);
+                  int fps = Integer.parseInt(token[1]);
+                  ps3eye.init(fps, resolution);
+                } else {
+                  configs[i].toggle(false);
+                }
+              }
+            }  
+          }
+
+        }
       }
     });
     
